@@ -1,0 +1,144 @@
+Last login: Tue Oct 19 01:48:18 on ttys002
+You have mail.
+philipp@MacBookPro ~ % ssh knivemare@188.68.52.99
+Enter passphrase for key '/Users/philipp/.ssh/id_rsa': 
+Welcome to Ubuntu 20.04.3 LTS (GNU/Linux 5.4.0-88-generic x86_64)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/advantage
+
+  System information as of Tue 19 Oct 2021 01:58:18 AM CEST
+
+  System load:              0.03
+  Usage of /:               57.6% of 18.64GB
+  Memory usage:             30%
+  Swap usage:               0%
+  Processes:                134
+  Users logged in:          0
+  IPv4 address for docker0: 172.17.0.1
+  IPv4 address for eth0:    188.68.52.99
+  IPv6 address for eth0:    2a03:4000:6:e622:b49d:59ff:fe03:f2c3
+
+ * Super-optimized for small spaces - read how we shrank the memory
+   footprint of MicroK8s to make it the smallest full K8s around.
+
+   https://ubuntu.com/blog/microk8s-memory-optimisation
+
+0 updates can be applied immediately.
+
+
+*** System restart required ***
+Last login: Tue Oct 19 01:48:42 2021 from 79.194.206.165
+knivemare@v2202105148313152939:~$ sudo apt update
+[sudo] password for knivemare: 
+Hit:1 https://download.docker.com/linux/ubuntu focal InRelease
+Hit:2 http://de.archive.ubuntu.com/ubuntu focal InRelease                       
+Hit:3 http://de.archive.ubuntu.com/ubuntu focal-updates InRelease               
+Hit:4 http://de.archive.ubuntu.com/ubuntu focal-backports InRelease             
+Hit:5 http://security.ubuntu.com/ubuntu focal-security InRelease                
+Reading package lists... Done                             
+Building dependency tree       
+Reading state information... Done
+All packages are up to date.
+knivemare@v2202105148313152939:~$ sudo systemctl status nginx
+● nginx.service - A high performance web server and a reverse proxy server
+     Loaded: loaded (/lib/systemd/system/nginx.service; enabled; vendor preset: enabled)
+     Active: failed (Result: exit-code) since Tue 2021-10-19 01:56:18 CEST; 3min 21s ago
+       Docs: man:nginx(8)
+    Process: 412452 ExecStartPre=/usr/sbin/nginx -t -q -g daemon on; master_process on; (code=exited, status=0/SUCCESS)
+    Process: 412462 ExecStart=/usr/sbin/nginx -g daemon on; master_process on; (code=exited, status=1/FAILURE)
+
+Oct 19 01:56:17 v2202105148313152939 nginx[412462]: nginx: [emerg] bind() to 0.0.0.0:80 failed (98: Address already in use)
+Oct 19 01:56:17 v2202105148313152939 nginx[412462]: nginx: [emerg] bind() to [::]:80 failed (98: Address already in use)
+Oct 19 01:56:17 v2202105148313152939 nginx[412462]: nginx: [emerg] bind() to 0.0.0.0:80 failed (98: Address already in use)
+Oct 19 01:56:17 v2202105148313152939 nginx[412462]: nginx: [emerg] bind() to [::]:80 failed (98: Address already in use)
+Oct 19 01:56:18 v2202105148313152939 nginx[412462]: nginx: [emerg] bind() to 0.0.0.0:80 failed (98: Address already in use)
+Oct 19 01:56:18 v2202105148313152939 nginx[412462]: nginx: [emerg] bind() to [::]:80 failed (98: Address already in use)
+Oct 19 01:56:18 v2202105148313152939 nginx[412462]: nginx: [emerg] still could not bind()
+Oct 19 01:56:18 v2202105148313152939 systemd[1]: nginx.service: Control process exited, code=exited, status=1/FAILURE
+Oct 19 01:56:18 v2202105148313152939 systemd[1]: nginx.service: Failed with result 'exit-code'.
+Oct 19 01:56:18 v2202105148313152939 systemd[1]: Failed to start A high performance web server and a reverse proxy server.
+knivemare@v2202105148313152939:~$ netstat -tulpn | grep :80
+
+Command 'netstat' not found, but can be installed with:
+
+sudo apt install net-tools
+
+knivemare@v2202105148313152939:~$ fuser 80/tcp
+knivemare@v2202105148313152939:~$ sudo apt-get install psmisc
+Reading package lists... Done
+Building dependency tree       
+Reading state information... Done
+psmisc is already the newest version (23.3-1).
+The following packages were automatically installed and are no longer required:
+  libllvm11 libxdamage1 linux-headers-5.4.0-73 linux-headers-5.4.0-73-generic linux-headers-5.4.0-80 linux-headers-5.4.0-80-generic linux-image-5.4.0-73-generic linux-image-5.4.0-80-generic linux-modules-5.4.0-73-generic
+  linux-modules-5.4.0-80-generic linux-modules-extra-5.4.0-73-generic linux-modules-extra-5.4.0-80-generic python3-pyparsing
+Use 'sudo apt autoremove' to remove them.
+0 upgraded, 0 newly installed, 0 to remove and 0 not upgraded.
+knivemare@v2202105148313152939:~$ sudo fuser 80/tcp
+80/tcp:              395595 395694
+knivemare@v2202105148313152939:~$ sudo lsof -t -i tcp:80 -s tcp:listen
+395595
+395694
+knivemare@v2202105148313152939:~$ sudo xargs kill
+sudo lsof -t -i tcp:80 -s tcp:listen | sudo xargs kill
+
+^C
+knivemare@v2202105148313152939:~$ sudo lsof -t -i tcp:80 -s tcp:listen | sudo xargs kill
+knivemare@v2202105148313152939:~$ sudo fuser 80/tcp
+knivemare@v2202105148313152939:~$ sudo systemctl start nginx
+knivemare@v2202105148313152939:~$ sudo systemctl status nginx
+● nginx.service - A high performance web server and a reverse proxy server
+     Loaded: loaded (/lib/systemd/system/nginx.service; enabled; vendor preset: enabled)
+     Active: active (running) since Tue 2021-10-19 02:02:31 CEST; 10s ago
+       Docs: man:nginx(8)
+    Process: 413094 ExecStartPre=/usr/sbin/nginx -t -q -g daemon on; master_process on; (code=exited, status=0/SUCCESS)
+    Process: 413099 ExecStart=/usr/sbin/nginx -g daemon on; master_process on; (code=exited, status=0/SUCCESS)
+   Main PID: 413107 (nginx)
+      Tasks: 2 (limit: 2279)
+     Memory: 1.7M
+     CGroup: /system.slice/nginx.service
+             ├─413107 nginx: master process /usr/sbin/nginx -g daemon on; master_process on;
+             └─413108 nginx: worker process
+
+Oct 19 02:02:31 v2202105148313152939 systemd[1]: Starting A high performance web server and a reverse proxy server...
+Oct 19 02:02:31 v2202105148313152939 systemd[1]: Started A high performance web server and a reverse proxy server.
+knivemare@v2202105148313152939:~$ cd /etc/nginx/
+knivemare@v2202105148313152939:/etc/nginx$ ls
+conf.d  fastcgi.conf  fastcgi_params  koi-utf  koi-win  mime.types  modules-available  modules-enabled  nginx.conf  proxy_params  scgi_params  sites-available  sites-enabled  snippets  uwsgi_params  win-utf
+knivemare@v2202105148313152939:/etc/nginx$ cd sites-available/
+knivemare@v2202105148313152939:/etc/nginx/sites-available$ ls
+default
+knivemare@v2202105148313152939:/etc/nginx/sites-available$ sudo touch jawny.de.conf
+knivemare@v2202105148313152939:/etc/nginx/sites-available$ ls
+default  jawny.de.conf
+knivemare@v2202105148313152939:/etc/nginx/sites-available$ sudo nano default 
+
+  GNU nano 4.8                                                                                                      default                                                                                                                 
+        # concurs with nginx's one
+        #
+        #location ~ /\.ht {
+        #       deny all;
+        #}
+}
+
+
+# Virtual Host configuration for example.com
+#
+# You can move that to a different file under sites-available/ and symlink that
+# to sites-enabled/ to enable it.
+#
+#server {
+#       listen 80;
+#       listen [::]:80;
+#
+#       server_name example.com;
+#
+#       root /var/www/example.com;
+#       index index.html;
+#
+#       location / {
+#               try_files $uri $uri/ =404;
+#       }
+#}
